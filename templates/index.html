@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+   <title>Coco Deep Learning</title>
+
+   <!-- Bootstrap CSS -->
+   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+      integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+
+   <!-- Bootstrap JS -->
+   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+      crossorigin="anonymous"></script>
+   <!-- JQuery -->
+   <script src="https://code.jquery.com/jquery-3.6.4.min.js"
+      integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+   <div class="container">
+      <br>
+      <div class="d-flex">
+         <div class="col-md-1">
+            <div class="form-group">
+               <select class="form-control" id="dropdown">
+                  <option>CIFAR10</option>
+                  <option>COCO</option>
+               </select>
+            </div>
+         </div>
+         <div class="col-md-3">
+            <button class="btn btn-primary" id="show-test-images">Afficher les images de test</button>
+         </div>
+         <form class="col-md-6" action="" method="POST" enctype="multipart/form-data">
+            <div class="input-group">
+               <!-- <input class="form-control " type="file" id="image-input" name="file"> -->
+               <input class="form-control" type="url" id="image-input-url" name="url" placeholder="Entrer un URL">
+               <button type="submit" class="btn btn-primary" id="submit-button">Envoyer l'URL</button>
+            </div>
+         </form>
+      </div>
+
+      <hr>
+
+      <div class="row">
+         <div class="col-md-6" id="image-div">
+            <div id="uploaded-div" style="display: none;">
+            </div>
+
+            <div class="container" id="image-grid">
+               <h2>Images de test</h2>
+               <div class="row">
+                  <div class="col-md-6">
+                     <img src="https://lalouise.fr/wp-content/uploads/2021/02/la-louise-sous-voiles-pres-682x1024.jpg"
+                        class="img-fluid h-100 rounded">
+                  </div>
+                  <div class="col-md-6">
+                     <div class="row">
+                        <div class="col-md-12 mb-3">
+                           <img
+                              src="https://img.20mn.fr/NoQBW3SwTxy_laVhOMBH5ik/1200x768_les-chiens-de-race-rottweiller"
+                              class="img-fluid rounded">
+                        </div>
+                        <div class="col-md-12">
+                           <img
+                              src="https://www.rd.com/wp-content/uploads/2020/01/GettyImages-1131335393-e1650030686687.jpg"
+                              class="img-fluid rounded">
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+         </div>
+         <div class="col-md-6">
+            <h2>Prédiction de l'IA</h2>
+            <p id="prediction">Aucune prédiction pour le moment.</p>
+         </div>
+      </div>
+   </div>
+
+   <script>
+      $(document).ready(function () {
+         let model = 'cifar10';
+
+         function switchModel() {
+            console.log(model)
+            if (model === 'cifar10') {
+               model = 'coco';
+               const url = ["TODO",
+                  "TODO",
+                  "TODO"];
+               $("#image-grid img").each(function (index, element) {
+                  $(element).attr("src", url[index])
+               });
+            } else {
+               model = 'cifar10';
+
+               const url = ["https://lalouise.fr/wp-content/uploads/2021/02/la-louise-sous-voiles-pres-682x1024.jpg",
+                  "https://img.20mn.fr/NoQBW3SwTxy_laVhOMBH5ik/1200x768_les-chiens-de-race-rottweiller",
+                  "https://www.rd.com/wp-content/uploads/2020/01/GettyImages-1131335393-e1650030686687.jpg"];
+               $("#image-grid img").each(function (index, element) {
+                  $(element).attr("src", url[index])
+               });
+            }
+         }
+
+         function showSelectedImage(imageSource) {
+            $('#image-grid').css("display", "none")
+            $('#uploaded-div').css("display", "");
+            $('#uploaded-div').html("");
+
+            let headerUploadedDiv = document.createElement('h2');
+            headerUploadedDiv.innerText = "Image uploadé";
+
+            let uploadedImage = document.createElement("img");
+            uploadedImage.classList.add("img-fluid", "rounded");
+            uploadedImage.id = "uploaded-image";
+            uploadedImage.src = imageSource;
+            $('#uploaded-div').append(headerUploadedDiv, uploadedImage);
+         }
+
+         function resetPredictionDiv() {
+            $('#prediction').html("Aucune prédiction pour le moment.");
+         }
+
+         function sendImageForPrediction(data) {
+            let request = {
+               type: 'POST',
+               data: data,
+               processData: false,
+               contentType: false,
+               success: function (data) {
+                  if (data === "") {
+                     $('#prediction').html("<div class='alert alert-warning'>Une erreur est survenue</div>")
+                  } else {
+                     if (data.predictionImageUrl !== "") {
+                        $('#uploaded-image').attr("src", data.predictionImageUrl);
+                     }
+                     $('#prediction').text(data.predictionText);
+                  }
+               }
+            };
+            if (model === "cifar10") {
+               request.url = '/upload'
+            } else {
+               request.url = '/upload_coco'
+            }
+            if ('imageTest' in data) {
+               request.contentType = "application/json";
+               request.data = JSON.stringify(data);
+            }
+            $.ajax(request);
+         }
+
+         // Preview uploaded image
+         $('#image-input').on('change', function () {
+            resetPredictionDiv();
+            var reader = new FileReader();
+            reader.onload = function (e) {
+               showSelectedImage(e.target.result);
+            }
+            reader.readAsDataURL(this.files[0]);
+         });
+
+         // Predict image using AI model
+         $('form').submit(function (e) {
+            const form_data = $(this).serializeArray();
+            showSelectedImage(form_data[0]["value"]);
+            resetPredictionDiv();
+
+            e.preventDefault();
+            var formData = new FormData($(this)[0]);
+            sendImageForPrediction(formData);
+         });
+
+         $('#image-grid img').on('click', function () {
+            showSelectedImage(this.src);
+            $('#image-input-url').val(this.src)
+            $('#submit-button').click();
+         });
+
+         $('#show-test-images').on('click', function () {
+            $('#uploaded-div').css("display", "none")
+            $('#image-grid').css("display", "")
+            resetPredictionDiv();
+            $('#image-input-url').val("")
+         });
+
+         $('#dropdown').change(function () {
+            switchModel();
+         });
+      });
+   </script>
+</body>
+
+</html>
