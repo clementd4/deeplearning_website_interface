@@ -53,7 +53,7 @@
                <div class="row">
                   <div class="col-md-6">
                      <img src="https://lalouise.fr/wp-content/uploads/2021/02/la-louise-sous-voiles-pres-682x1024.jpg"
-                        class="img-fluid h-100 rounded">
+                        class="img-fluid rounded">
                   </div>
                   <div class="col-md-6">
                      <div class="row">
@@ -88,9 +88,8 @@
             console.log(model)
             if (model === 'cifar10') {
                model = 'coco';
-               const url = ["TODO",
-                  "TODO",
-                  "TODO"];
+               const url = ["https://www.academiedugout.fr/images/16437/1200-auto/banane_000.jpg?poix=50&poiy=50","https://media.istockphoto.com/id/1307624581/vector/stop-sign-with-hand-icon-info-graphics-vector-graphics.jpg?s=612x612&w=0&k=20&c=zNQnBw8lYqiOJ4DAx336gcNhYQRE0b_xelUpQKk8Rs0=",
+                  "https://www.jaimefruitsetlegumes.ca/wp-content/uploads/2019/08/iStock_000007671231Large-e1565725651658-700x700.jpg"];
                $("#image-grid img").each(function (index, element) {
                   $(element).attr("src", url[index])
                });

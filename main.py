@@ -32,13 +32,10 @@ def upload_image():
                 return jsonify(predictionImageUrl="", predictionText=result)
             if request.is_json:
                 parsed_url = urlparse(request.get_json()["imageTest"])
-                # TODO parsed_url.path
             else:
                 return "" 
         else:
             file = request.files['file']
-            # if user does not select file, browser also
-            # submit an empty part without filename
             if file.filename == '':
                 return ""
             if file:
@@ -57,9 +54,11 @@ def predictionFromImageCifar10(image_array):
     return prediction
 
 
-cocomodel = tf.keras.models.load_model('cifar10.h5') # TODO
+cocomodel = tf.keras.models.load_model('baby_cnn_9.h5')
 
-cocoClasses = ['avion ✈️', 'voiture 🚓', 'oiseau 🐦', 'chat 🐱', 'cerf 🦌', 'chien 🐶', 'grenouille 🐸', 'cheval 🐎', 'bateau 🚢', 'camion 🚛'] # TODO
+cocoClassInteger = [13, 52]
+cocoClasses = {13: 'panneau stop 🛑', 52: 'banane 🍌'}
+
 @app.route('/upload_coco', methods=['POST'])
 def upload_image_coco():
     if request.method == 'POST':
@@ -76,27 +75,24 @@ def upload_image_coco():
                 if bestPrediction < 0.5:
                     return jsonify(predictionImageUrl="TODO", predictionText="Le modèle n'a pas pu classifier cette image")
 
-                result = "Prediction: " + cocoClasses[np.argmax(prediction[0])]
+                classInteger = cocoClassInteger[np.argmax(prediction[0])]
+                result = "Prediction: " + cocoClasses[classInteger]
                 return jsonify(predictionImageUrl="", predictionText=result)
             if request.is_json:
                 parsed_url = urlparse(request.get_json()["imageTest"])
-                # TODO parsed_url.path
             else:
                 return "" 
         else:
             file = request.files['file']
-            # if user does not select file, browser also
-            # submit an empty part without filename
             if file.filename == '':
                 return ""
             if file:
                 file.save('static/uploads/' + file.filename)
-    # model.predict()
     return jsonify(predictionImageUrl="TODO", predictionText="TODO")
 
 def predictionFromImageCoco(image_array):
     img = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
-    img = cv2.resize(img, (32, 32)) # TODO resize
+    img = cv2.resize(img, (224, 224))
     img = (np.expand_dims(img,0))
     prediction = cocomodel.predict(img)
     return prediction
